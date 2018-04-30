@@ -1,39 +1,50 @@
 import React from 'react';
-import List from "../components/List";
-import Form from "../components/Form";
-import fetchIssueList from "../github";
+import _isEmpty from 'lodash/isEmpty';
+import CustomerList from "../components/CustomerList";
+import CustomersService from "../services/Customers";
+import CardsService from '../services/Cards';
+import EligibleCards from "../components/EligibleCards";
 
 export default class Home extends React.Component {
 
   constructor() {
     super();
     this.state = {
-      items: [],
-      queryParams: {}
+      customers: [],
+      selected: {
+        id: 0,
+        title: '',
+        firstName: '',
+        lastName: '',
+        dob: '',
+        income: '',
+        employment: '',
+        houseNumber: '',
+        postcode: ''
+      },
+      eligibleCards: {}
     };
-    this.getQueryParams = this.getQueryParams.bind(this);
+    this.getCustomerDetails = this.getCustomerDetails.bind(this);
   }
 
-  componentDidMount() {
-    this.getIssues();
+  componentWillMount() {
+    const customers = new CustomersService().list;
+    this.setState({ customers });
   }
 
-  async getIssues(params) {
-    const issues = await fetchIssueList(params);
-    this.setState({ items: issues });
-  }
-
-  getQueryParams(params) {
-    this.setState({ queryParams: params }, () => {
-      this.getIssues(this.state.queryParams);
+  getCustomerDetails(customerDetails) {
+    this.setState({ selected: customerDetails }, () => {
+      this.setState({ eligibleCards: new CardsService().getEligibleCards(this.state.selected) });
     });
   }
 
   render() {
+    const { selected } = this.state;
+    const customerName = !_isEmpty(selected) ? `${selected.title} ${selected.firstName} ${selected.lastName}` : '';
     return (
-      <div className="home">
-        <Form setQueryParams={this.getQueryParams}/>
-        <List items={this.state.items} />
+      <div>
+        <CustomerList customers={this.state.customers} setSelected={this.getCustomerDetails} selected={this.state.selected} />
+        <EligibleCards eligibleCards={this.state.eligibleCards} customerName={customerName} />
       </div>
     )
   }

@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import { injectGlobal } from 'styled-components';
-import dotenv from 'dotenv';
 import Home from "./containers/Home";
-
-dotenv.config();
 
 injectGlobal`
   html {
